@@ -55,53 +55,14 @@ def get_0_1_array(array,rate=0.2):
     re_array = new_array.reshape(array.shape)
     return re_array
 
-def synthetic_data(mask_ratio,dataset):
-
-    if(dataset=='Metr'):
-        path = os.path.join('./data/metr_la/', 'metr_la.h5')
-        data = pd.read_hdf(path)
-        data = np.array(data)
-        data = data[:, :, None]
-        mask=get_0_1_array(data,mask_ratio)
-
-
-    elif(dataset=='PEMS'):
-        path = os.path.join('./data/pems_bay/', 'pems_bay.h5')
-        data = pd.read_hdf(path)
-        data = np.array(data)
-        data = data[:, :, None]
-        mask = get_0_1_array(data, mask_ratio)
-
-
-    elif(dataset=='ETTh1'):
-        df_raw = pd.read_csv('./data/ETT/ETTh1.csv')
-        data=np.array(df_raw)
-        data=data[::,1:]
-        mask = get_0_1_array(data, mask_ratio)
-        data = data[:, :, None].astype('float32')
-        mask = mask[:, :, None].astype('int32')
-
-    elif (dataset == 'Elec'):
-        data_list = []
-        with open('./data/Electricity/electricity.txt', 'r') as f:
-            reader = f.readlines()
-            for row in reader:
-                data_list.append(row.split(','))
-
-        data = np.array(data_list).astype('float')
-        mask = get_0_1_array(data, mask_ratio)
-        data = data[:, :, None].astype('float32')
-        mask = mask[:, :, None].astype('int32')
-
-    elif(dataset=='BeijingAir'):
-
-        data = pd.DataFrame(pd.read_hdf('./data/air_quality/small36.h5', 'pm25'))
-        data=np.array(data)
-        eval_mask=~np.isnan(data)
-        mask= get_0_1_array(data, mask_ratio)  #   ~np.isnan(data)
-        data[np.isnan(data)]=0.0
-        data = data[:, :, None].astype('float32')
-        mask = mask[:, :, None].astype('int32')
+def synthetic_data(mask_ratio, dataset):
+    data = dataset
+    data=np.array(data)
+    eval_mask=~np.isnan(data)
+    mask= get_0_1_array(data, mask_ratio)  #   ~np.isnan(data)
+    data[np.isnan(data)]=0.0
+    data = data[:, :, None].astype('float32')
+    mask = mask[:, :, None].astype('int32')
 
 
     return data,mask
@@ -164,8 +125,8 @@ def Add_Window_Horizon(data,mask, window=3, horizon=1):
     masks_target=np.array(masks_target)
 
     return X, Y,masks,masks_target
-def loaddataset(history_len,pred_len,mask_ratio,dataset):
-    data_numpy,mask=synthetic_data(mask_ratio,dataset)
+def loaddataset(history_len, pred_len, mask_ratio, dataset):
+    data_numpy,mask = synthetic_data(mask_ratio, dataset)
     x, y, mask,mask_target = Add_Window_Horizon(
         data_numpy, mask,history_len, pred_len)
 

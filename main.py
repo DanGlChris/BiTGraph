@@ -23,7 +23,7 @@ parser.add_argument('--epochs', type=int)
 parser.add_argument('--batch_size', type=int, default=64)
 parser.add_argument('--task', default='prediction',type=str)
 parser.add_argument("--adj-threshold", type=float, default=0.1)
-parser.add_argument('--dataset',default='Elec')
+#parser.add_argument('--dataset',default='Elec')
 parser.add_argument('--val_ratio',default=0.2)
 parser.add_argument('--test_ratio',default=0.2)
 parser.add_argument('--column_wise',default=False)
@@ -118,7 +118,7 @@ parser.add_argument('--horizon_lag',default=1,type=int)
 args = parser.parse_args()
 criteron=nn.L1Loss().cuda()
 
-if(args.dataset=='Metr'):
+'''if(args.dataset=='Metr'):
     node_number=207
     args.num_nodes=207
     args.enc_in=207
@@ -147,21 +147,21 @@ elif(args.dataset=='BeijingAir'):
     args.num_nodes=36
     args.enc_in = 36
     args.dec_in = 36
-    args.c_out = 36
+    args.c_out = 36'''
 
-def train(model):
+def train(model, dataset):
     optimizer = optim.Adam(model.parameters(), lr=1e-3)
     if args.seed < 0:
         args.seed = np.random.randint(1e9)
     torch.set_num_threads(1)
-    exp_name = datetime.datetime.now().strftime('%Y%m%dT%H%M%S')
-    exp_name = f"{exp_name}_{args.seed}"
-    logdir = os.path.join('./log_dir', args.dataset_name,
-                          args.model_name, exp_name)
+    #exp_name = datetime.datetime.now().strftime('%Y%m%dT%H%M%S')
+    #exp_name = f"{exp_name}_{args.seed}"
+    #logdir = os.path.join('./log_dir', args.dataset_name,
+    #                      args.model_name, exp_name)
     # save config for logging
-    os.makedirs(logdir, exist_ok=True)
+    #os.makedirs(logdir, exist_ok=True)
 
-    train_dataloader, val_dataloader, test_dataloader, scaler=loaddataset(args.seq_len,args.pred_len,args.mask_ratio,args.dataset)
+    train_dataloader, val_dataloader, test_dataloader, scaler = loaddataset(args.seq_len, args.pred_len, args.mask_ratio, dataset)
 
     best_loss=9999999.99
     k=0
@@ -182,9 +182,9 @@ def train(model):
         print('epoch, loss:',epoch,loss)
         if(loss<best_loss):
             best_loss=loss
-            best_model = copy.deepcopy(model.state_dict())
-            os.makedirs('./output_BiaTCGNet_'+args.dataset+'_miss'+str(args.mask_ratio)+'_'+args.task,exist_ok=True)
-            torch.save(best_model, './output_BiaTCGNet_'+args.dataset+'_miss'+str(args.mask_ratio)+'_'+args.task+'/best.pth')
+            #best_model = copy.deepcopy(model.state_dict())
+            #os.makedirs('./output_BiaTCGNet_'+args.dataset+'_miss'+str(args.mask_ratio)+'_'+args.task,exist_ok=True)
+            #torch.save(best_model, './output_BiaTCGNet_'+args.dataset+'_miss'+str(args.mask_ratio)+'_'+args.task+'/best.pth')
 
 
 def evaluate(model, val_iter,scaler):
@@ -206,10 +206,14 @@ def evaluate(model, val_iter,scaler):
 
     return loss/len(val_iter)
 
+def predict(self, x):
+        self.model.eval()
+        with torch.no_grad():
+            x = x.to(self.device)
+            y_pred = self.model(x)#, None, None, None)  # Passing None for x_mark, y_true, and y_mark
+        return y_pred.cpu()
 
-
-def run():
-
+def run(dataset):
 
 
     model=Model(True, True, 2, node_number,args.kernel_set,
@@ -224,9 +228,9 @@ def run():
     if torch.cuda.is_available():
         model = model.cuda()
 
-    train(model)
+    train(model, dataset)
 
 
 if __name__ == '__main__':
-    run()
+    print()
 
