@@ -20,9 +20,10 @@ class Main:
     def __init__(self, args=None):
 
         torch.multiprocessing.set_sharing_strategy('file_system')
-        self.node_number=207
+        node_number=7
+        self.node_number=node_number
         parser = argparse.ArgumentParser()
-        parser.add_argument('--epochs', type=int)
+        parser.add_argument('--epochs', type=int, default=100)
         parser.add_argument('--batch_size', type=int, default=64)
         parser.add_argument('--task', default='prediction',type=str)
         parser.add_argument("--adj-threshold", type=float, default=0.1)
