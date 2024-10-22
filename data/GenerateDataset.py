@@ -60,7 +60,7 @@ def synthetic_data(mask_ratio, dataset):
     data=np.array(data)
     #eval_mask=~np.isnan(data)
     mask= get_0_1_array(data, mask_ratio)  #   ~np.isnan(data)
-    data[np.isnan(data)]=0.0
+    data = np.nan_to_num(data, nan=0.0)
     data = data[:, :, None].astype('float32')
     mask = mask[:, :, None].astype('int32')
 
