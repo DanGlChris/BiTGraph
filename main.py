@@ -22,104 +22,15 @@ class Main:
         torch.multiprocessing.set_sharing_strategy('file_system')
         node_number=7
         self.node_number=node_number
-        parser = argparse.ArgumentParser()
-        parser.add_argument('--epochs', type=int, default=100)
-        parser.add_argument('--batch_size', type=int, default=64)
-        parser.add_argument('--task', default='prediction',type=str)
-        parser.add_argument("--adj-threshold", type=float, default=0.1)
-        #parser.add_argument('--dataset',default='Elec')
-        parser.add_argument('--val_ratio',default=0.2)
-        parser.add_argument('--test_ratio',default=0.2)
-        parser.add_argument('--column_wise',default=False)
-        parser.add_argument('--seed', type=int, default=-1)
-        parser.add_argument('--precision', type=int, default=32)
-        parser.add_argument("--model-name", type=str, default='spin')
-        parser.add_argument("--dataset-name", type=str, default='air36'
-                                                                '')
-        parser.add_argument('--fc_dropout', default=0.2, type=float)
-        parser.add_argument('--head_dropout', default=0, type=float)
-        parser.add_argument('--individual', type=int, default=0, help='individual head; True 1 False 0')
-        parser.add_argument('--patch_len', type=int, default=8, help='patch length')
-        parser.add_argument('--padding_patch', default='end', help='None: None; end: padding on the end')
-        parser.add_argument('--revin', type=int, default=0, help='RevIN; True 1 False 0')
-        parser.add_argument('--affine', type=int, default=0, help='RevIN-affine; True 1 False 0')
-        parser.add_argument('--subtract_last', type=int, default=0, help='0: subtract mean; 1: subtract last')
-        parser.add_argument('--decomposition', type=int, default=0, help='decomposition; True 1 False 0')
-        parser.add_argument('--kernel_size', type=int, default=25, help='decomposition-kernel')
-        parser.add_argument('--kernel_set', type=list, default=[2,3,6,7], help='kernel set')
-        ##############transformer config############################
+        config = Config(self.node_number)
 
-        parser.add_argument('--enc_in', type=int, default=node_number, help='encoder input size')
-        parser.add_argument('--dec_in', type=int, default=node_number, help='decoder input size')
-        parser.add_argument('--c_out', type=int, default=node_number, help='output size')
-        parser.add_argument('--d_model', type=int, default=512, help='dimension of model')
-        parser.add_argument('--n_heads', type=int, default=8, help='num of heads')
-        parser.add_argument('--e_layers', type=int, default=2, help='num of encoder layers')
-        parser.add_argument('--d_layers', type=int, default=2, help='num of decoder layers')
-        parser.add_argument('--d_ff', type=int, default=2048, help='dimension of fcn')
-        parser.add_argument('--moving_avg', default=[24], help='window size of moving average')
-        parser.add_argument('--factor', type=int, default=1, help='attn factor')
-        parser.add_argument('--dropout', type=float, default=0.05, help='dropout')
-        parser.add_argument('--embed', type=str, default='timeF',
-                            help='time features encoding, options:[timeF, fixed, learned]')
-        parser.add_argument('--activation', type=str, default='gelu', help='activation')
-        parser.add_argument('--freq', type=str, default='h',
-                            help='freq for time features encoding, options:[s:secondly, t:minutely, h:hourly, d:daily, '
-                                'b:business days, w:weekly, m:monthly], you can also use more detailed freq like 15min or 3h')
-        parser.add_argument('--num_nodes', type=int, default=node_number, help='dimension of fcn')
-        parser.add_argument('--version', type=str, default='Fourier',
-                                help='for FEDformer, there are two versions to choose, options: [Fourier, Wavelets]')
-        parser.add_argument('--mode_select', type=str, default='random',
-                                help='for FEDformer, there are two mode selection method, options: [random, low]')
-        parser.add_argument('--modes', type=int, default=64, help='modes to be selected random 64')
-        parser.add_argument('--L', type=int, default=3, help='ignore level')
-        parser.add_argument('--base', type=str, default='legendre', help='mwt base')
-        parser.add_argument('--cross_activation', type=str, default='tanh',
-                            help='mwt cross atention activation function tanh or softmax')
-        #######################AGCRN##########################
-        parser.add_argument('--input_dim', default=1, type=int)
-        parser.add_argument('--output_dim', default=1, type=int)
-        parser.add_argument('--embed_dim', default=512, type=int)
-        parser.add_argument('--rnn_units', default=64, type=int)
-        parser.add_argument('--num_layers', default=2, type=int)
-        parser.add_argument('--cheb_k', default=2, type=int)
-        parser.add_argument('--default_graph', type=bool, default=True)
-
-        #############GTS##################################
-        parser.add_argument('--temperature', default=0.5, type=float, help='temperature value for gumbel-softmax.')
-
-        parser.add_argument("--config_filename", type=str, default='')
-        #####################################################
-        parser.add_argument("--config", type=str, default='imputation/spin.yaml')
-        parser.add_argument('--output_attention', type=bool, default=False)
-        # Splitting/aggregation params
-        parser.add_argument('--val-len', type=float, default=0.2)
-        parser.add_argument('--test-len', type=float, default=0.2)
-        parser.add_argument('--mask_ratio',type=float,default=0.1)
-        # Training params
-        parser.add_argument('--lr', type=float, default=0.001)  #0.001
-        # parser.add_argument('--epochs', type=int, default=300)
-        parser.add_argument('--patience', type=int, default=40)
-        parser.add_argument('--l2-reg', type=float, default=0.)
-        # parser.add_argument('--batches-epoch', type=int, default=300)
-        parser.add_argument('--batch-inference', type=int, default=32)
-        parser.add_argument('--split-batch-in', type=int, default=1)
-        parser.add_argument('--grad-clip-val', type=float, default=5.)
-        parser.add_argument('--loss-fn', type=str, default='l1_loss')
-        parser.add_argument('--lr-scheduler', type=str, default=None)
-        parser.add_argument('--seq_len',default=24,type=int) # 96
-        # parser.add_argument('--history_len',default=24,type=int) #96
-        parser.add_argument('--label_len',default=12,type=int) #48
-        parser.add_argument('--pred_len',default=24,type=int)
-        parser.add_argument('--horizon',default=24,type=int)
-        parser.add_argument('--delay',default=0,type=int)
-        parser.add_argument('--stride',default=1,type=int)
-        parser.add_argument('--window_lag',default=1,type=int)
-        parser.add_argument('--horizon_lag',default=1,type=int)
+        config.epochs = 300
+        config.batch_size = 64
+        config.lr = 0.001
 
         # Connectivity params
         # parser.add_argument("--adj-threshold", type=float, default=0.1)
-        self.args = parser.parse_args()
+        self.args = config
         self.criteron=nn.L1Loss().cuda()
 
         '''if(args.dataset=='Metr'):
@@ -235,3 +146,87 @@ class Main:
 
         self.train(model, dataset)
 
+class Config:
+    def __init__(self, node_number):
+        # Training parameters
+        self.epochs = 100
+        self.batch_size = 64
+        self.task = 'prediction'
+        self.adj_threshold = 0.1
+        self.val_ratio = 0.2
+        self.test_ratio = 0.2
+        self.column_wise = False
+        self.seed = -1
+        self.precision = 32
+        self.model_name = 'spin'
+        self.dataset_name = 'air36'
+        self.fc_dropout = 0.2
+        self.head_dropout = 0
+        self.individual = 0  # True 1 False 0
+        self.patch_len = 8
+        self.padding_patch = 'end'  # None: None; end: padding on the end
+        self.revin = 0  # RevIN; True 1 False 0
+        self.affine = 0  # RevIN-affine; True 1 False 0
+        self.subtract_last = 0  # 0: subtract mean; 1: subtract last
+        self.decomposition = 0  # decomposition; True 1 False 0
+        self.kernel_size = 25
+        self.kernel_set = [2, 3, 6, 7]
+
+        # Transformer config
+        self.enc_in = node_number  # Replace with actual node number
+        self.dec_in = node_number  # Replace with actual node number
+        self.c_out = node_number  # Replace with actual node number
+        self.d_model = 512
+        self.n_heads = 8
+        self.e_layers = 2
+        self.d_layers = 2
+        self.d_ff = 2048
+        self.moving_avg = [24]
+        self.factor = 1
+        self.dropout = 0.05
+        self.embed = 'timeF'
+        self.activation = 'gelu'
+        self.freq = 'h'
+        self.num_nodes = node_number  # Replace with actual node number
+        self.version = 'Fourier'
+        self.mode_select = 'random'
+        self.modes = 64
+        self.L = 3
+        self.base = 'legendre'
+        self.cross_activation = 'tanh'
+
+        # AGCRN
+        self.input_dim = 1
+        self.output_dim = 1
+        self.embed_dim = 512
+        self.rnn_units = 64
+        self.num_layers = 2
+        self.cheb_k = 2
+        self.default_graph = True
+
+        # GTS
+        self.temperature = 0.5
+        self.config_filename = ''
+        self.config = 'imputation/spin.yaml'
+        self.output_attention = False
+        self.val_len = 0.2
+        self.test_len = 0.2
+        self.mask_ratio = 0.1
+
+        # Training params
+        self.lr = 0.001
+        self.patience = 40
+        self.l2_reg = 0.0
+        self.batch_inference = 32
+        self.split_batch_in = 1
+        self.grad_clip_val = 5.0
+        self.loss_fn = 'l1_loss'
+        self.lr_scheduler = None
+        self.seq_len = 24
+        self.label_len = 12
+        self.pred_len = 24
+        self.horizon = 24
+        self.delay = 0
+        self.stride = 1
+        self.window_lag = 1
+        self.horizon_lag = 1
