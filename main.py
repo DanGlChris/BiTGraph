@@ -22,15 +22,10 @@ class Main:
         torch.multiprocessing.set_sharing_strategy('file_system')
         node_number=7
         self.node_number=node_number
-        config = Config(self.node_number)
-
-        config.epochs = 300
-        config.batch_size = 64
-        config.lr = 0.001
-
+        self.config = Config(self.node_number)
         # Connectivity params
         # parser.add_argument("--adj-threshold", type=float, default=0.1)
-        self.args = config
+        self.args = self.config
         self.criteron=nn.L1Loss().cuda()
 
         '''if(args.dataset=='Metr'):
