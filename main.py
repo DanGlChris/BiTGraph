@@ -227,6 +227,8 @@ def run(dataset):
               layers=2, propalpha=0.05, tanhalpha=3, layer_norm_affline=True) #2 4 6
     if torch.cuda.is_available():
         model = model.cuda()
+    else:
+        model = model.cpu()
 
     train(model, dataset)
 
