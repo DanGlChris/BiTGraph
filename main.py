@@ -139,7 +139,7 @@ class Main:
     def run(self, dataset):
 
         model=Model(True, True, 2, self.node_number, self.args.kernel_set,
-                'cuda:0', predefined_A=None,
+                'cpu:0', predefined_A=None,
                 dropout=0.3, subgraph_size=5,
                 node_dim=3,
                 dilation_exponential=1,
