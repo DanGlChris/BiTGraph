@@ -37,13 +37,13 @@ class nconv(nn.Module):
         self.inputsize = inputsize
         self.mlp = nn.Linear(inputsize, 10)
         self.getweight = getweight(inputsize)
-        self.alpha1 = nn.Parameter(torch.zeros(num_nodes, num_nodes)).cuda()
-        self.alpha2 = nn.Parameter(torch.zeros(num_nodes, num_nodes)).cuda()
+        self.alpha1 = nn.Parameter(torch.zeros(num_nodes, num_nodes)).cpu()
+        self.alpha2 = nn.Parameter(torch.zeros(num_nodes, num_nodes)).cpu()
 
 
         self.getweight = getweight(self.input_len)
-        self.triu_matrix = torch.from_numpy(np.triu(np.ones((self.num_nodes, self.num_nodes)), 1)).cuda().float()
-        self.tril_matrix = torch.from_numpy(np.tril(np.ones((self.num_nodes, self.num_nodes)), 1)).cuda().float()
+        self.triu_matrix = torch.from_numpy(np.triu(np.ones((self.num_nodes, self.num_nodes)), 1)).cpu().float()
+        self.tril_matrix = torch.from_numpy(np.tril(np.ones((self.num_nodes, self.num_nodes)), 1)).cpu().float()
 
     def forward(self,x, A,mask,k):
 
@@ -118,7 +118,7 @@ class mixprop(nn.Module):
 
     def forward(self,x,adj,mask,k,flag=0):
 
-        adj = adj + torch.eye(adj.size(0)).cuda()
+        adj = adj + torch.eye(adj.size(0)).cpu()
         d = adj.sum(1)
         h = x
         out = [h]
@@ -283,7 +283,7 @@ class graph_global(nn.Module):
     def __init__(self, nnodes, k, dim, device, alpha=3, static_feat=None):
         super(graph_global, self).__init__()
         self.nnodes = nnodes
-        self.A = nn.Parameter(torch.randn(nnodes, nnodes).cuda(), requires_grad=True).cuda()#to(device)
+        self.A = nn.Parameter(torch.randn(nnodes, nnodes).cpu(), requires_grad=True).cpu()#to(device)
         ##to(device)
     def forward(self, idx):
         return F.relu(self.A)
@@ -319,7 +319,7 @@ class graph_undirected(nn.Module):
 
         a = torch.mm(nodevec1, nodevec2.transpose(1,0))
         adj = F.relu(torch.tanh(self.alpha*a))
-        mask = torch.zeros(idx.size(0), idx.size(0)).cuda()#to(self.device)
+        mask = torch.zeros(idx.size(0), idx.size(0)).cpu()#to(self.device)
         mask.fill_(float('0'))
         s1,t1 = adj.topk(self.k,1)
         mask.scatter_(1,t1,s1.fill_(1))
@@ -361,7 +361,7 @@ class graph_directed(nn.Module):
 
         a = torch.mm(nodevec1, nodevec2.transpose(1,0))
         adj = F.relu(torch.tanh(self.alpha*a))
-        mask = torch.zeros(idx.size(0), idx.size(0)).cuda()#to(self.device)
+        mask = torch.zeros(idx.size(0), idx.size(0)).cpu()#to(self.device)
         mask.fill_(float('0'))
         s1,t1 = adj.topk(self.k,1)
         mask.scatter_(1,t1,s1.fill_(1))

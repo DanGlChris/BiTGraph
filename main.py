@@ -26,7 +26,7 @@ class Main:
         # Connectivity params
         # parser.add_argument("--adj-threshold", type=float, default=0.1)
         self.args = self.config
-        self.criteron=nn.L1Loss().cuda()
+        self.criteron=nn.L1Loss().cpu()
 
         '''if(args.dataset=='Metr'):
             node_number=207
@@ -79,7 +79,7 @@ class Main:
             model.train()
             for i, (x, y, mask, target_mask) in enumerate(train_dataloader):
 
-                x, y, mask,target_mask =x.cuda(), y.cuda(), mask.cuda(), target_mask.cuda()
+                x, y, mask,target_mask =x.cpu(), y.cpu(), mask.cpu(), target_mask.cpu()
                 x=x*mask
                 y=y*target_mask
                 x_hat=model(x,mask,k)
@@ -103,7 +103,7 @@ class Main:
         k=0
         with torch.no_grad():
             for i, (x,y,mask,target_mask) in enumerate(val_iter):
-                x, y, mask,target_mask = x.cuda(), y.cuda(), mask.cuda(), target_mask.cuda()
+                x, y, mask,target_mask = x.cpu(), y.cpu(), mask.cpu(), target_mask.cpu()
 
                 x_hat=model(x,mask,k)
 
@@ -123,7 +123,7 @@ class Main:
         k=0
         with torch.no_grad():
             for i, (x,y,mask,target_mask) in enumerate(self.test_dataloader):
-                x, y, mask,target_mask = x.cuda(), y.cuda(), mask.cuda(), target_mask.cuda()
+                x, y, mask,target_mask = x.cpu(), y.cpu(), mask.cpu(), target_mask.cpu()
 
                 x_hat=model(x,mask,k)
 
