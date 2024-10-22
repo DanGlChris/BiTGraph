@@ -133,12 +133,12 @@ class Main:
 
                 losses = torch.sum(torch.abs(x_hat-y)*target_mask)/torch.sum(target_mask)
                 loss+=losses
-            print('epoch, loss:', loss)
+            print('epoch, loss:', loss/len(self.test_dataloader))
         return all_predictions
 
     def run(self, dataset):
 
-        model=Model(True, True, 2, self.node_number, self.args.kernel_set,
+        self.model=Model(True, True, 2, self.node_number, self.args.kernel_set,
                 'cpu:0', predefined_A=None,
                 dropout=0.3, subgraph_size=5,
                 node_dim=3,
@@ -148,13 +148,13 @@ class Main:
                 seq_length=self.args.seq_len, in_dim=1,out_len=self.args.pred_len, out_dim=1,
                 layers=2, propalpha=0.05, tanhalpha=3, layer_norm_affline=True) #2 4 6
         if torch.cpu.is_available():
-            model = model.cpu()
+            self.model = self.model.cpu()
         else:
-            model = model.cuda()
+            self.model = self.model.cuda()
 
-        self.train(model, dataset)
-        prediction = self.test(model)
-        print(prediction)
+        self.train(self.model, dataset)
+        self.prediction = self.test(self.model)
+        print(self.prediction)
 class Config:
     def __init__(self, node_number):
         # Training parameters
