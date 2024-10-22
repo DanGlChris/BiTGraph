@@ -71,8 +71,8 @@ class Main:
         # save config for logging
         #os.makedirs(logdir, exist_ok=True)
 
-        train_dataloader, val_dataloader, test_dataloader, scaler = loaddataset(self.args.seq_len, self.args.pred_len, self.args.mask_ratio, dataset)
-
+        train_dataloader, val_dataloader, self.test_dataloader, scaler = loaddataset(self.args.seq_len, self.args.pred_len, self.args.mask_ratio, dataset)
+        self.scaler = scaler
         best_loss=9999999.99
         k=0
         for epoch in range(self.args.epochs):
@@ -116,12 +116,25 @@ class Main:
 
         return loss/len(val_iter)
 
-    def predict(self, model, x):
-            model.eval()
-            with torch.no_grad():
-                x = x.to(self.device)
-                y_pred = model(x)#, None, None, None)  # Passing None for x_mark, y_true, and y_mark
-            return y_pred.cpu()
+    def test(self, model):
+        model.eval()
+        loss=0.0
+        all_predictions = []
+        k=0
+        with torch.no_grad():
+            for i, (x,y,mask,target_mask) in enumerate(self.test_dataloader):
+                x, y, mask,target_mask = x.cuda(), y.cuda(), mask.cuda(), target_mask.cuda()
+
+                x_hat=model(x,mask,k)
+
+                x_hat = self.scaler.inverse_transform(x_hat)
+                y = self.scaler.inverse_transform(y)
+                all_predictions.append(y)
+
+                losses = torch.sum(torch.abs(x_hat-y)*target_mask)/torch.sum(target_mask)
+                loss+=losses
+            print('epoch, loss:', loss)
+        return all_predictions
 
     def run(self, dataset):
 
@@ -134,13 +147,14 @@ class Main:
                 skip_channels=16, end_channels= 32,
                 seq_length=self.args.seq_len, in_dim=1,out_len=self.args.pred_len, out_dim=1,
                 layers=2, propalpha=0.05, tanhalpha=3, layer_norm_affline=True) #2 4 6
-        if torch.cuda.is_available():
-            model = model.cuda()
-        else:
+        if torch.cpu.is_available():
             model = model.cpu()
+        else:
+            model = model.cuda()
 
         self.train(model, dataset)
-
+        prediction = self.test(model)
+        print(prediction)
 class Config:
     def __init__(self, node_number):
         # Training parameters

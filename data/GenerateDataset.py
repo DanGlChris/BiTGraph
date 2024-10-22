@@ -144,11 +144,9 @@ def loaddataset(history_len, pred_len, mask_ratio, dataset):
     train_dataset = TSDataset(x_tra, y_tra,masks_tra,masks_target_tra)
     val_dataset = TSDataset(x_val, y_val,masks_val,masks_target_val)
     test_dataset = TSDataset(x_test, y_test,masks_test,masks_target_test)
-    train_dataloader = DataLoader(train_dataset, batch_size=32, shuffle=True, num_workers=8,
-                                  drop_last=True)
+    train_dataloader = DataLoader(train_dataset, batch_size=32, shuffle=True, num_workers=8, drop_last=True)
     val_dataloader = DataLoader(val_dataset, batch_size=32, shuffle=False, num_workers=8, drop_last=True)
     test_dataloader = DataLoader(test_dataset,batch_size=32, shuffle=False, num_workers=8, drop_last=False)
-
 
     return train_dataloader, val_dataloader, test_dataloader, scaler
 
