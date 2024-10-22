@@ -126,6 +126,7 @@ def Add_Window_Horizon(data,mask, window=3, horizon=1):
 
     return X, Y,masks,masks_target
 def loaddataset(history_len, pred_len, mask_ratio, dataset):
+    dataset = dataset[dataset.columns[1:]]
     data_numpy,mask = synthetic_data(mask_ratio, dataset)
     x, y, mask,mask_target = Add_Window_Horizon(
         data_numpy, mask,history_len, pred_len)
